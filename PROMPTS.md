@@ -21,3 +21,5 @@ ChatGPT (5.2)
 "how do I handle Llama API's response stream to store all previous conversations?"
 
     - Stream
+
+"What are cors headers and how do I implement them in index.js?"
