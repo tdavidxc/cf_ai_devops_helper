@@ -84,18 +84,6 @@ export class ChatMemory {
         await this.state.storage.put("messages", messages);
     }
 
-    //helper function loadAllMessages used in webSocketMessage() to load and read the saved message list from storage
-    async loadAllMessages() {
-        var messages = await this.state.storage.get("messages");
-        //like save message, if there are no messages yet, it needs to return an empty array
-        if (messages === undefined) {
-            return [];
-        }
-        //otherwise return the messages
-        return messages;
-    }
-
-
     //now writing loadAllMessages() which has to read the saved message list from storage. It has to return an empty array if nothing has been saved yet
     async loadAllMessages() {
         var messages = await this.state.storage.get("messages");
