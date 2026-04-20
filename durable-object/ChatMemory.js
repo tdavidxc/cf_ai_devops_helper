@@ -56,7 +56,7 @@ export class ChatMemory {
         return
     }
 
-    
+
 
     //returns all stored messages as a JSON response.
     async getHistory() {
@@ -65,7 +65,9 @@ export class ChatMemory {
         }
     }
 
+    //deletes all stored messages
     async clearHistory() {
-        return
+        await this.state.storage.delete("messages");
+        return new Response("Chat history cleared");
     }
 }
