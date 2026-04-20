@@ -61,13 +61,14 @@ export class ChatMemory {
     //returns all stored messages as a JSON response.
     async getHistory() {
         var messages = away this.loadAllMessages(); //a helper method to load all the messages from storage
-        return new Response(JSON.stringify(messages));
-        }
+        //response.json automatically stringifies and sets it to application/json
+        return Response.json({messages: messages});
     }
-
+    
     //deletes all stored messages
     async clearHistory() {
         await this.state.storage.delete("messages");
-        return new Response("Chat history cleared");
+        //same here with the response.json
+        return Response.json({ok : true});
     }
 }
