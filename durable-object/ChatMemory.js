@@ -35,12 +35,31 @@ export class ChatMemory {
 
 
     //the functions that will handle the different requests
+    //a websocket is a connection that stays open 
+    //this is how messages will be sent to the LLM and responses will be sent back to the client without needing to make a new request every time
     async handleWebSocket(request) {
+        //it first needs to create the connection
+        var pair = new WebSocketPair();
+        var client = pair[0];
+        var server = pair[1];
+
+        //now using Cloudflare's Durable Object system to manage this connection
+        //Cloudclare will call websocketMessage() when a message arrives
+        this.state.acceptWebSocket(server);
+        //according to examples and web socket acceptance i need to switch protocols to the websocket one from http or https
+        return new Response(null, {status: 101, webSocket: client});
+    }
+
+    //because webSocketMessage() is automatically called by Cloudflare, that method needs to be implemented
+    async webSocketMessage(websocket, message) {
+        return
     }
 
     async getHistory(request) {
+        return
     }
 
     async clearHistory() {
+        return
     }
 }
