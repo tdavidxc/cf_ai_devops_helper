@@ -17,3 +17,7 @@ ChatGPT (5.2)
 "give me some tutorials + guidance + places I can learn to start making this project. Give me real sources, not hallucinated ones"
 
 "Wahat are all the status codes I need to know for this"
+
+"how do I handle Llama API's response stream to store all previous conversations?"
+
+    - Stream
