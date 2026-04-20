@@ -21,7 +21,7 @@ export class ChatMemory {
         }
         //if the url's pathname is /history
         if (url.pathname === "/history") {
-            return this.getHistory(request);
+            return this.getHistory();
         }
         //if the url wants to clear the chat
         if (url.pathname === "/clear") {
@@ -51,12 +51,18 @@ export class ChatMemory {
     }
 
     //because webSocketMessage() is automatically called by Cloudflare, that method needs to be implemented
+    //not sure what this has to do for now
     async webSocketMessage(websocket, message) {
         return
     }
 
-    async getHistory(request) {
-        return
+    
+
+    //returns all stored messages as a JSON response.
+    async getHistory() {
+        var messages = away this.loadAllMessages(); //a helper method to load all the messages from storage
+        return new Response(JSON.stringify(messages));
+        }
     }
 
     async clearHistory() {
