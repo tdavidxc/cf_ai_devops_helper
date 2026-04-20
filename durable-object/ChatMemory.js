@@ -68,8 +68,96 @@ export class ChatMemory {
             // data: {"response: "..."}
             //data: [DONE]
             //this means each line needs to be looked at individually and any lines that don't start with data can be skipped and slicing needs to be done to grab the actual string
+        var parsed;
+        try {
+            parsed = JSON.parse(message);
+        } catch (error) {
+            // Handle invalid JSON
+            websocket.send(JSON.stringify({error: "Could not parse your message"}));
+            return;
+        }
 
+        var role = parsed.role;
+        var content = parsed.content;
+        if (!role || !content) {
+            websocket.send(JSON.stringify({error: "Your message must have a role and content"}));
+            return;
+        }
+
+        await this.saveMessage(role, content);
+
+        var allMessages = await this.loadAllMessages();
+        var aiResponse = await this.env.AI.run(
+            "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+            {
+                messages: [
+                    {
+                        //this is the "system message" telling the model what its job is
+                        role: "system",
+                        content: "You are a helpful DevOps assistant. Help with CI/CD, deployments, and infrastructure. Be concise and clear."
+                    },
+                    ...allMessages
+                ],
+                stream: true
+            }
+        );
+
+        //response as streamof chunks
+        //reading the stream
+        var reader = aiResponse.getReader();
+        var decoder = new TextDecoder();
+        var fullReply = "";
+
+        while(true) {
+            var result = await reader.read();
+            var done = result.done;
+            var value = result.value;
+
+            if (done) {
+                break;
+            }
+            var chunk = decoder.decode(value);
+
+            //this is where we have to handle the way the ai responds
+            //the format line by line needs to be managed
+            var lines = chunk.split("\n");
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if(!line.startsWith("data: ")) {
+                    continue;
+                }
+                var jsonPart = line.slice(6).trim();
+                if(jsonPart === "[DONE]") {
+                    continue;
+                }
+
+                //now trying to parse the JSON and extract the word fragment from it
+                try {
+                    var parsed2 = JSON.parse(jsonPart);
+                    var token = parsed2.response;
+
+                    if(token) {
+                        fullReply = fullReply + token;
+                        websocket.send(JSON.stringify({type: "token", token: token}));
+                    }
+                } catch (error) {
+                    //if a line is not valid then ignoring it might work
+                }
+            }
+        }
+
+        //now stream handling is done, the response from the model needs to be saved in storage to be used later
+        await this.saveMessage("assistant", fullReply);
+        //tell the browser the ai has stopped responding
+        websocket.send(JSON.stringify({type: "done"}));
     }       
+
+    //like before when webSocketMessage is automatically called, webSocketClose() is also called by Cloudflare when the browser closes the connection so we need to define that too
+    //but i wont do anything when the connection is closed
+    async webSocketClose(websocket) {
+
+    }
+
 
     //helper function saveMessage used in webSocketMessage() to save the message to the storage
     //the method takes the content and adds it onto the list of messages already in storage
