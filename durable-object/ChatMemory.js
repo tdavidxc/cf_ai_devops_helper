@@ -56,6 +56,15 @@ export class ChatMemory {
         return
     }
 
+    //now writing loadAllMessages() which has to read the saved message list from storage. It has to return an empty array if nothing has been saved yet
+    async loadAllMessages() {
+        var messages = await this.state.storage.get("messages");
+        if (messages === undefined) {
+            return [];
+        }
+        //otherwise return messages
+        return messages;
+    }
 
 
     //returns all stored messages as a JSON response.
