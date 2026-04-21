@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CF AI DevOps Helper</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0f1117;
+        color: #e2e8f0;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        padding: 12px 20px;
+        background: #161b27;
+        border-bottom: 1px solid #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      header .logo {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #f6821f, #faad3f);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 14px;
+        color: #fff;
+      }
+
+      header h1 { font-size: 16px; font-weight: 600; }
+      header .subtitle { font-size: 12px; color: #718096; margin-left: auto; }
+
+      #status-bar {
+        font-size: 11px;
+        padding: 4px 20px;
+        background: #1a202c;
+        border-bottom: 1px solid #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #718096;
+      }
+
+      #status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #fc8181;
+        flex-shrink: 0;
+      }
+      #status-dot.connected { background: #68d391; }
+
+      #messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .msg {
+        max-width: 720px;
+        line-height: 1.6;
+        font-size: 14px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .msg.user {
+        align-self: flex-end;
+        background: #2b6cb0;
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 16px 16px 4px 16px;
+      }
+
+      .msg.assistant {
+        align-self: flex-start;
+        background: #1e2533;
+        border: 1px solid #2d3748;
+        padding: 10px 14px;
+        border-radius: 4px 16px 16px 16px;
+      }
+
+      .msg.assistant code {
+        background: #0f1117;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-family: "Fira Code", monospace;
+        font-size: 12px;
+      }
+
+      .msg.assistant pre {
+        background: #0f1117;
+        border: 1px solid #2d3748;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 8px;
+        overflow-x: auto;
+        font-family: "Fira Code", monospace;
+        font-size: 12px;
+      }
+
+      .typing-indicator {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        padding: 10px 14px;
+        background: #1e2533;
+        border: 1px solid #2d3748;
+        border-radius: 4px 16px 16px 16px;
+        align-self: flex-start;
+        width: fit-content;
+      }
+
+      .typing-indicator span {
+        width: 6px; height: 6px;
+        background: #718096;
+        border-radius: 50%;
+        animation: bounce 1.2s infinite;
+      }
+      .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+      .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+      @keyframes bounce {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-5px); }
+      }
+
+      #input-area {
+        padding: 14px 20px;
+        background: #161b27;
+        border-top: 1px solid #2d3748;
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+      }
+
+      #input {
+        flex: 1;
+        background: #1e2533;
+        border: 1px solid #2d3748;
+        border-radius: 10px;
+        color: #e2e8f0;
+        font-size: 14px;
+        padding: 10px 14px;
+        resize: none;
+        min-height: 42px;
+        max-height: 140px;
+        outline: none;
+        font-family: inherit;
+        line-height: 1.5;
+        transition: border-color 0.15s;
+      }
+      #input:focus { border-color: #4a90d9; }
+      #input::placeholder { color: #4a5568; }
+
+      #send-btn {
+        background: #f6821f;
+        border: none;
+        border-radius: 10px;
+        width: 42px;
+        height: 42px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: background 0.15s, opacity 0.15s;
+      }
+      #send-btn:hover { background: #faad3f; }
+      #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+      #send-btn svg { width: 18px; height: 18px; fill: #fff; }
+
+      #clear-btn {
+        background: transparent;
+        border: 1px solid #2d3748;
+        border-radius: 10px;
+        height: 42px;
+        padding: 0 12px;
+        color: #718096;
+        font-size: 12px;
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s;
+        flex-shrink: 0;
+      }
+      #clear-btn:hover { border-color: #fc8181; color: #fc8181; }
+
+      .empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #4a5568;
+        font-size: 14px;
+        text-align: center;
+      }
+      .empty-state .big-icon { font-size: 40px; }
+      .empty-state strong { color: #718096; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">CF</div>
+      <h1>DevOps Helper</h1>
+      <span class="subtitle">Powered by Llama 3.3 · Cloudflare Workers AI</span>
+    </header>
+
+    <div id="status-bar">
+      <div id="status-dot"></div>
+      <span id="status-text">Connecting…</span>
+    </div>
+
+    <div id="messages">
+      <div class="empty-state" id="empty-state">
+        <div class="big-icon">🛠️</div>
+        <strong>CF AI DevOps Helper</strong>
+        <span>Ask anything about CI/CD, deployments, infrastructure, or cloud ops.</span>
+      </div>
+    </div>
+
+    <div id="input-area">
+      <button id="clear-btn" title="Clear history">Clear</button>
+      <textarea
+        id="input"
+        placeholder="Ask a DevOps question…"
+        rows="1"
+      ></textarea>
+      <button id="send-btn" title="Send">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

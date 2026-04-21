@@ -1,0 +1,37 @@
+# wrangler.toml
+# This is the config file for Cloudflare. It tells Cloudflare:
+#   - what your project is called
+#   - where your main JS file is
+#   - what special Cloudflare features (called "bindings") your app uses
+
+# The name of your Worker (shows up in your Cloudflare dashboard)
+name = "cf-ai-devops-helper"
+
+# This is the file Cloudflare runs when a request comes in
+main = "worker/index.js"
+
+# This date tells Cloudflare which version of their platform to use.
+# Just leave it as-is.
+compatibility_date = "2024-01-01"
+
+# This lets you use some Node.js features inside Cloudflare Workers
+compatibility_flags = ["nodejs_compat"]
+format = "modules"
+
+# This gives your Worker access to Cloudflare's AI models.
+# In your JS code you access it as: env.AI
+[ai]
+binding = "AI"
+
+# This sets up the Durable Object (the thing that stores chat memory).
+# "name" is what you call it in your JS code: env.CHAT_MEMORY
+# "class_name" must exactly match the class name in ChatMemory.js
+[[durable_objects.bindings]]
+name = "CHAT_MEMORY"
+class_name = "ChatMemory"
+
+# Cloudflare needs this to know it should create a new Durable Object class.
+# You only need this once — it registers the class for the first time.
+[[migrations]]
+tag = "v1"
+new_classes = ["ChatMemory"]
