@@ -36,6 +36,8 @@ AI/LLM Prompts used during this project [disclaimer: the project was heavily cod
 
 **Claude**
 
+I re-read the instructions again and saw that AI assisted coding was encouraged, after spending too long on ChatMemory.js, I decided to use AI assisted coding further to improve workflow, completeting the rest of the files in a couple hours.
+
 I gave claude a skeleton code for the front-end asking it to fix the colours, syntax and visual layout.
 
 "Using the skeleton code and the design seen in the screenshot, create a front-end in html allowing devops engineers to communicate with a backend "app.js". Keep in mind the users will be talking to Llama so input will be parsed in block streams so accomodate for spacing with the text boxes. Allow the user to input, send and clear text at the bottom. Also add a small notifier to notify the user if connection to the server is good or gone."
